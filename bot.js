@@ -10,14 +10,14 @@
 // [x] Aggiungere il nome del canale nella liste delle partite attive
 // [x] Se !list arriva da chat privata allora è sempre global
 
-var xmpp 		= require('simple-xmpp');
+var xmpp 		    = require('simple-xmpp');
 var util        = require('util');
 var request     = require('quisquilia/request');
-var consts 		= require('quisquilia/consts');
-var db 			= require('quisquilia/db');
-var ladder 		= require('quisquilia/ladder');
+var consts 		  = require('quisquilia/consts');
+var db 			    = require('quisquilia/db');
+var ladder 		  = require('quisquilia/ladder');
 var LolClient 	= require('./lol-client');
-var HashMap 	= require('hashmap').HashMap;
+var HashMap 	  = require('hashmap').HashMap;
 var config      = require('./config');
 
 
@@ -25,7 +25,7 @@ var LolClient, client, options, summoner, util;
 options = {
     region: 'euw',
     username: config.rtmp_user, // LOWERCASE OR IT WILL NOT WORK. Please add a function to convert to lowercase just in case.
-    password: xmpp_user.rtmp_password,
+    password: config.rtmp_password,
     version: '4.14.14_08_11_13_42',
     debug: false
   };
@@ -35,7 +35,7 @@ db.create();
 /**
  * Queue for messages, otherwise the server blocks for spamming
  */
-/*var message = 
+/*var message =
 {
     to : "",
     message : "",
@@ -75,7 +75,7 @@ xmpp.on('online', function()
         xmpp.join(conference);
     });
 
-    // Set presence every few minute
+    // Set presence every few minutes
     setInterval(
         function()
         {
@@ -94,7 +94,7 @@ xmpp.on('online', function()
         }, 60000 * 30);
 
     //xmpp.join("@lvl.pvp.net");
-    
+
 });
 
 /**
@@ -124,23 +124,23 @@ xmpp.on('groupchat', function(conference, from, message, stamp, from_id)
     message = message.replace("<![CDATA[", "").replace("]]>", "");
     request.process(message, conference, from, xmpp, client, SendMessage);
 });
- 
+
 //     if(from === "quisquilia" || from === "") return;
 //     if(message === "") return;
 //     message = message.replace("<![CDATA[", "").replace("]]>", "");
 //     if(message === "") return;
-//     if (message.indexOf('!hello') === 0) 
+//     if (message.indexOf('!hello') === 0)
 //     {
 //         xmpp.send(conference, "Hey there " + from, true);
 //     }
-//     if (message.indexOf('!version') === 0) 
+//     if (message.indexOf('!version') === 0)
 //     {
 //         xmpp.send(conference, "Quisquilia Bot - Version 0.0.1", true);
 //     }
 //     else
 //     {
-//         xmpp.send(conference, socialbot.answer(message), true);   
-//     }
+//         xmpp.send(conference, socialbot.answer(message), true);
+//     } was j
 //     //console.log('%s says %s on %s on %s at %s', from, message, conference, stamp.substr(0,9), stamp.substr(10));
 //     // console.log('%s says %s on %s', from, message, conference);
 // });
@@ -162,7 +162,7 @@ setTimeout(function()
 	    if (stanza.is('presence') && stanza.attrs.type == 'subscribed')
 	    {
 	        var from = stanza.attrs.from;
-	        if(first_message != null)
+	        if(first_message !== null)
 	        {
 	            xmpp.send(first_message.to, first_message.message, first_message.groupchat);
 	            first_message = null;
@@ -178,18 +178,18 @@ setTimeout(function()
 	        {
 	            if ( stanza.getChild('x').getChild('item') )
 	            {
-	                account = stanza.getChild('x').getChild('item').attrs.jid;  
+	                account = stanza.getChild('x').getChild('item').attrs.jid;
 	            }
 	        }
 
 	        db.getGame(conference, player, function(game_id)
 	            {
-	                if(game_id != null)
+	                if(game_id !== null)
 	                {
 	                    db.cancelGame(conference, player);
 	                }
-	            });   
-	        
+	            });
+
 	        db.setSeen(conference, player, account, 0);
 	    }
 
@@ -209,93 +209,25 @@ setTimeout(function()
 					// 	console.log(name);
 					// 	console.log(state);
 	    //      		});
-	    		    if(state == "online")
-	    		    {	                
-	                	setTimeout(function()
-						{
-	                		db.getName(account, function(name)
-	                		{
-	                    		switch(name)
-	                    		{	
-			                        case "an average buu":
-										xmpp.send(conference, "All hail to buu!", true);
-										break;
+	    		    if(state == "online") {
+	                setTimeout(function() {
+	                	  db.getName(account, function(name) {
+                        console.log(name);
 
-			                    	case "DMX512":
-			                    		xmpp.send(conference, "Sam joined but he/she/it didn't tell me what to say yet... So I can't say what i want. I can sing too! LAAA la laa laaa..", true);
-			                    		break;
+                        db.getGreeting(name, function(msg) {
+                          if (msg !== null && msg !== undefined) {
+                            xmpp.send(conference, msg, true);
+                          }
+                        });
+                        //xmpp.send(conference, db.getGreeting(name, function(callback){
 
-			                    	case "sibon":
-			                    		xmpp.send(conference, "SHACOSHACOSHACOSHACO", true);
-			                    		break;
+                      //  }), true);
+						          }, 2000);
+                  });
+              }
+      }
+    }
 
-			                    	case "Maerissa":
-			                    		xmpp.send(conference, "Maerissa joined. Wait, who was she again?", true);
-			                    		break;
-
-			                    	case "HunterAntor":
-			                    		xmpp.send(conference, "HunterAntor joined Zen. He is sardine!", true);
-			                    		break;
-
-			                    	case "GhostlyBanette":
-			                    		xmpp.send(conference, "Gangplank is freelo", true);
-			                    		break;
-
-			                    	case "WORST LEE ASIA":
-			                    		xmpp.send(conference, "Shay joined, his profile can be found here: http://lol.gamepedia.com/InSec", true);
-			                    		break;
-
-			                    	case "Grizzfang":
-			                    		xmpp.send(conference, "Grizzfang joined: http://z0r.de/4768", true);
-			                    		break;
-
-			                    	case "WaruiiKagemusha":
-			                    		xmpp.send(conference, "There is no apparent reason why one number is prime and another not. To the contrary, upon looking at these numbers one has the feeling of being in the presence of one of the inexplicable secrets of creation.", true);
-			                    		break;
-
-			                    	case "Entyra Songsteel":
-			                    		xmpp.send(conference, "All Hail the mighty caster!", true);
-			                    		break;
-
-			                    	case "M4rissa":
-			                    		xmpp.send(conference, "Shazare's here. Force her to play top, that won't end well...", true);
-			                    		break;
-
-			                    	case "Broken Chris":
-			                    		xmpp.send(conference, "Hey Chris, you missed a minion: now your cs's ruined.", true);
-			                    		break;
-
-			                    	case "Somnomim":
-			                    		xmpp.send(conference, "Ah, Som disconnected again. Ah no he's here. Ah no, disconnected again.", true);
-			                    		break;
-			                    			
-			                    	case "Shêngbô":
-			                    		xmpp.send(conference, "Shêngbô joined. Invite him and let him play Lucian for you.", true);
-			                    		break;
-
-			                    	case "Zarnotox":
-			                    		xmpp.send(conference, "Hey zarnotox, why you are never sarcastic!?", true);
-			                    		break;
-
-			                    	case "Larry Pound":
-			                    		xmpp.send(conference, "Spear coming! Oh wait it's just Larry.", true);
-			                    		break;
-
-			                    	case "Admiral Peet":
-			                    		xmpp.send(conference, "All rise for the honorable Admiral Feed...I mean Peet...", true);
-			                    		break;
-
-			                    	case "Anpyron":
-			                    		xmpp.send(conference, "Your god Anpyron has arrived. (Ego maniac... ^^)", true);
-			                    		break;
-
-	                		    }
-	            		    });
-						}, 2000);
-					}
-	            }
-	        }
-	        
 	        /**
 	         * If the user goes in dnd it means that he's playing a game
 	         * so any current active game get disabled
@@ -307,12 +239,12 @@ setTimeout(function()
 
 	            db.getGame(conference, player, function(game_id)
 	            {
-	                if(game_id != null)
+	                if(game_id !== null && game_id !== undefined)
 	                {
 	                    // Start the game (active = 0)
 	                    db.startGame(game_id);
 	                }
-	            });     
+	            });
 	        }
 
 	        // Update Last Seen
@@ -347,8 +279,8 @@ xmpp.on('subscribe', function(from)
  * @type {String}
  */
 // xmpp.connect({
-//         jid             : 'quisquilia@pvp.net/xiff',
-//         password        : 'AIR_dermochelys1004',
+//         jid             : 'someuser@pvp.net/xiff',
+//         password        : 'AIR_somepassword',
 //         host            : 'chat.euw1.lol.riotgames.com', //chat.euw.lol.riotgames.com',
 //         port            : 5223,
 //         legacySSL       : true
@@ -415,14 +347,14 @@ client.on('connection', function() {
      */
     setInterval(function()
     {
-    	client.checkPendingInvitations(null, function(err, result) 
+    	client.checkPendingInvitations(null, function(err, result)
    		{
    			// if we have some we have to check if we are already tracking them or not
    				return console.log(util.inspect(result, false, null, true));
 
    			//console.log(result.data);
 
-   			if(result.data != "")
+   			if(result.data !== "")
    			{
    				gameMetaData = JSON.parse(result.data[0].object.gameMetaData);
    				gameId = gameMetaData.gameId;
@@ -434,7 +366,7 @@ client.on('connection', function() {
    					db.trackGame(gameId, function()
    					{
    						trackedGames.set(gameId, result.data[0].object);
-   						
+
    						// send a message to the owner that the bot is now tracking the game
    				   		db.getAccount(result.data[0].object.owner.object.summonerName, function(account)
    				   		{
@@ -457,24 +389,17 @@ client.on('connection', function() {
 
 		// //
 		// trackedGames.forEach(function(value, key) {
-			
+
 		// 	client.GetLatestGameTimerState(key, function(err, result)
 		// 	{
 		// 		return console.log(util.inspect(result, false, null, true));
 		// 	});
 		// });
 
-   
+
 
   //  	 	//gameTypeConfigId":6 // tournament
   //   }, 10000);
   });
 
   client.connect();
-
-
-
-
-
-
-
