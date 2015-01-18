@@ -62,6 +62,8 @@ xmpp.on('online', function()
     console.log("| " + consts.APPLICATION_NAME);
     console.log("| version " + consts.VERSION);
     console.log("| written by buu <matteo.alvazzi@gmail.com>");
+    console.log("| contibutors:");
+    console.log("| -- Shêngbô <bacsi.tibor92@gmail.com>");
     console.log("|");
     console.log("----------------------------------------------");
     console.log("");
@@ -203,7 +205,7 @@ setTimeout(function()
 	            if ( stanza.getChild('x').getChild('item') )
 	            {
 	                account = stanza.getChild('x').getChild('item').attrs.jid;
-					var state = (stanza.getChild('show'))? stanza.getChild('show').getText(): "online";
+					       var state = (stanza.getChild('show'))? stanza.getChild('show').getText(): "online";
 					// db.getName(account, function(name)
 	    //      		{
 					// 	console.log(name);
@@ -222,7 +224,7 @@ setTimeout(function()
                         //xmpp.send(conference, db.getGreeting(name, function(callback){
 
                       //  }), true);
-						          }, 2000);
+						          }, 4000);
                   });
               }
       }
