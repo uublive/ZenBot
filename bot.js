@@ -230,7 +230,6 @@ setTimeout(function()
                         var state = (stanza.getChild('show'))? stanza.getChild('show').getText(): "online";
     	    		    if(state == "online") 
                         {
-                            console.log(account);
                             db.getGreeting(account, function(msg) 
                             {
                                 setTimeout(function() 
@@ -371,7 +370,7 @@ client.on('connection', function() {
     	client.checkPendingInvitations(null, function(err, result)
    		{
    			// if we have some we have to check if we are already tracking them or not
-   				return console.log(util.inspect(result, false, null, true));
+   			return console.log(util.inspect(result, false, null, true));
 
    			//console.log(result.data);
 
