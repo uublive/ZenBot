@@ -43,6 +43,7 @@ db.create();
 }*/
 var messages 		= [];
 var first_message 	= {};
+var greetings_served = 0;
 
 client = new LolClient(options);
 
@@ -196,47 +197,58 @@ setTimeout(function()
 	            }
 	        }
 
-	        db.getGame(conference, player, function(game_id)
-	            {
-	                if(game_id !== null)
-	                {
-	                    db.cancelGame(conference, player);
-	                }
-	            });
+            if(player !== undefined && player != 'undefined')
+            {
+    	        db.getGame(conference, player, function(game_id)
+    	        {
+    	            if(game_id !== null)
+                    {
+                        db.cancelGame(conference, player);
+                    }
+                });
 
-	        db.setSeen(conference, player, account, 0);
+	            db.setSeen(conference, player, account, 0);
+            }
 	    }
 
 	    if (stanza.is('presence') && !stanza.attrs.type)
 	    {
+           
 	        var conference = stanza.attrs.from.split('/')[0];
 	        var player = stanza.attrs.from.split('/')[1];
 	        var account = "";
-	        if(stanza.getChild('x'))
-	        {
-	            if ( stanza.getChild('x').getChild('item') )
-	            {
-	                account = stanza.getChild('x').getChild('item').attrs.jid;
-                    var state = (stanza.getChild('show'))? stanza.getChild('show').getText(): "online";
-	    		    if(state == "online") 
-                    {
-                        db.getName(account, function(name) 
+            if(player !== undefined && player != 'undefined')
+            {
+                 // Update Last Seen
+                db.setSeen(conference, player, account, 1);
+
+    	        if(stanza.getChild('x'))
+    	        {
+    	            if ( stanza.getChild('x').getChild('item') )
+    	            {
+    	                account = stanza.getChild('x').getChild('item').attrs.jid;
+                        var state = (stanza.getChild('show'))? stanza.getChild('show').getText(): "online";
+    	    		    if(state == "online") 
                         {
-                            db.getGreeting(name, function(msg) 
+                            console.log(account);
+                            db.getGreeting(account, function(msg) 
                             {
                                 setTimeout(function() 
                                 {
                                     if (msg !== null && msg !== undefined) 
                                     {
+                                        greetings_served++;
+                                        if(greetings_served < 2) msg = msg + " [ " + greetings_served + " greeting served so far ]";
+                                        else msg = msg + " [ " + greetings_served + " greetings served so far ]";
                                         xmpp.send(conference, msg, true);
                                     }  
                                 }, 3000);
                             });
-                        });
+                        }
                     }
                 }
             }
-
+            
 	        /**
 	         * If the user goes in dnd it means that he's playing a game
 	         * so any current active game get disabled
@@ -246,18 +258,18 @@ setTimeout(function()
 	        if(state == "dnd")
 	        {
 
-	            db.getGame(conference, player, function(game_id)
-	            {
-	                if(game_id !== null && game_id !== undefined)
-	                {
-	                    // Start the game (active = 0)
-	                    db.startGame(game_id);
-	                }
-	            });
+                if(player !== undefined && player != 'undefined')
+                {
+                    db.getGame(conference, player, function(game_id)
+                    {
+                        if(game_id !== null && game_id !== undefined)
+                        {
+                            // Start the game (active = 0)
+                            db.startGame(game_id);
+                        }
+                    });
+                }
 	        }
-
-	        // Update Last Seen
-	        db.setSeen(conference, player, account, 1);
 	    }
 	});
 }, 5000);
