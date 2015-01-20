@@ -95,6 +95,18 @@ xmpp.on('online', function()
             });
         }, 60000 * 30);
 
+    // Discworld Quotes
+    setInterval(
+        function()
+        {
+            db.getConferences(function(conference)
+            {
+                var quote =  consts.DISCQUOTES[Math.floor(Math.random() * (consts.DISCQUOTES.length + 1))];
+                xmpp.send(conference, quote + " (Discworld)", true);
+            });
+        }, 60000 * 15);
+    
+
     //xmpp.join("@lvl.pvp.net");
 
 });
@@ -205,30 +217,25 @@ setTimeout(function()
 	            if ( stanza.getChild('x').getChild('item') )
 	            {
 	                account = stanza.getChild('x').getChild('item').attrs.jid;
-					       var state = (stanza.getChild('show'))? stanza.getChild('show').getText(): "online";
-					// db.getName(account, function(name)
-	    //      		{
-					// 	console.log(name);
-					// 	console.log(state);
-	    //      		});
-	    		    if(state == "online") {
-	                setTimeout(function() {
-	                	  db.getName(account, function(name) {
-                        console.log(name);
-
-                        db.getGreeting(name, function(msg) {
-                          if (msg !== null && msg !== undefined) {
-                            xmpp.send(conference, msg, true);
-                          }
+                    var state = (stanza.getChild('show'))? stanza.getChild('show').getText(): "online";
+	    		    if(state == "online") 
+                    {
+                        db.getName(account, function(name) 
+                        {
+                            db.getGreeting(name, function(msg) 
+                            {
+                                setTimeout(function() 
+                                {
+                                    if (msg !== null && msg !== undefined) 
+                                    {
+                                        xmpp.send(conference, msg, true);
+                                    }  
+                                }, 3000);
+                            });
                         });
-                        //xmpp.send(conference, db.getGreeting(name, function(callback){
-
-                      //  }), true);
-						          }, 4000);
-                  });
-              }
-      }
-    }
+                    }
+                }
+            }
 
 	        /**
 	         * If the user goes in dnd it means that he's playing a game
