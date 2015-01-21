@@ -97,15 +97,17 @@ xmpp.on('online', function()
         }, 60000 * 30);
 
     // Discworld Quotes
-    setInterval(
-        function()
+    setTimeout(function() 
+    {
+        setInterval(function()
         {
             db.getConferences(function(conference)
-            {
+            {   
                 var quote =  consts.DISCQUOTES[Math.floor(Math.random() * (consts.DISCQUOTES.length + 1))];
                 xmpp.send(conference, quote + " (Discworld)", true);
             });
-        }, 60000 * 15);
+        }, 60000 * 30);
+    }, 60000 * 15);
     
 
     //xmpp.join("@lvl.pvp.net");
