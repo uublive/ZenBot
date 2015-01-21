@@ -194,21 +194,19 @@ setTimeout(function()
 	            if ( stanza.getChild('x').getChild('item') )
 	            {
 	                account = stanza.getChild('x').getChild('item').attrs.jid;
+                    account = account.replace("/xiff","");
 	            }
 	        }
 
-            if(player !== undefined && player != 'undefined')
-            {
-    	        db.getGame(conference, player, function(game_id)
-    	        {
-    	            if(game_id !== null)
-                    {
-                        db.cancelGame(conference, player);
-                    }
-                });
+            db.getGame(conference, player, function(game_id)
+	        {
+	            if(game_id !== null)
+                {
+                    db.cancelGame(conference, player);
+                }
+            });
 
-	            db.setSeen(conference, player, account, 0);
-            }
+            if(account != "") db.setSeen(conference, player, account, 0);
 	    }
 
 	    if (stanza.is('presence') && !stanza.attrs.type)
@@ -217,33 +215,33 @@ setTimeout(function()
 	        var conference = stanza.attrs.from.split('/')[0];
 	        var player = stanza.attrs.from.split('/')[1];
 	        var account = "";
-            if(player !== undefined && player != 'undefined')
-            {
-                 // Update Last Seen
-                db.setSeen(conference, player, account, 1);
+            
+	        if(stanza.getChild('x'))
+	        {
+	            if ( stanza.getChild('x').getChild('item') )
+	            {
+	                account = stanza.getChild('x').getChild('item').attrs.jid;
+                    account = account.replace("/xiff","");
 
-    	        if(stanza.getChild('x'))
-    	        {
-    	            if ( stanza.getChild('x').getChild('item') )
-    	            {
-    	                account = stanza.getChild('x').getChild('item').attrs.jid;
-                        var state = (stanza.getChild('show'))? stanza.getChild('show').getText(): "online";
-    	    		    if(state == "online") 
+                    // Update Last Seen
+                    if(account != "") db.setSeen(conference, player, account, 1);
+
+                    var state = (stanza.getChild('show'))? stanza.getChild('show').getText(): "online";
+	    		    if(state == "online") 
+                    {
+                        db.getGreeting(account, function(msg) 
                         {
-                            db.getGreeting(account, function(msg) 
+                            setTimeout(function() 
                             {
-                                setTimeout(function() 
+                                if (msg !== null && msg !== undefined && msg.length > 0) 
                                 {
-                                    if (msg !== null && msg !== undefined) 
-                                    {
-                                        greetings_served++;
-                                        if(greetings_served < 2) msg = msg + " [ " + greetings_served + " greeting served so far ]";
-                                        else msg = msg + " [ " + greetings_served + " greetings served so far ]";
-                                        xmpp.send(conference, msg, true);
-                                    }  
-                                }, 3000);
-                            });
-                        }
+                                    greetings_served++;
+                                    if(greetings_served < 2) msg = msg + " [ " + greetings_served + " greeting served so far ]";
+                                    else msg = msg + " [ " + greetings_served + " greetings served so far ]";
+                                    xmpp.send(conference, msg, true);
+                                }  
+                            }, 3000);
+                        });
                     }
                 }
             }
@@ -256,18 +254,14 @@ setTimeout(function()
 	        var state = (stanza.getChild('show'))? stanza.getChild('show').getText(): "online";
 	        if(state == "dnd")
 	        {
-
-                if(player !== undefined && player != 'undefined')
+                db.getGame(conference, player, function(game_id)
                 {
-                    db.getGame(conference, player, function(game_id)
+                    if(game_id !== null && game_id !== undefined)
                     {
-                        if(game_id !== null && game_id !== undefined)
-                        {
-                            // Start the game (active = 0)
-                            db.startGame(game_id);
-                        }
-                    });
-                }
+                        // Start the game (active = 0)
+                        db.startGame(game_id);
+                    }
+                });
 	        }
 	    }
 	});
